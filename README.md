@@ -17,7 +17,7 @@ HeaderGrade is a fast and local HTTP security header scanner built in Go. It all
 Because HeaderGrade packages its static assets into the Go binary, you can install and use it directly using the `go install` command without needing to manually clone the repository.
 
 ```bash
-go install github.com/yourusername/headergrade@latest
+go install github.com/yigitsengezer/headergrade@latest
 ```
 
 *(Ensure that your `GOPATH/bin` is added to your system `PATH` to run the command directly).*
@@ -47,7 +47,7 @@ HeaderGrade masks its HTTP requests as a standard modern web browser to ensure t
 If you prefer to clone and run the source code directly:
 
 ```bash
-git clone https://github.com/yourusername/headergrade.git
+git clone https://github.com/yigitsengezer/headergrade.git
 cd headergrade
 go run main.go
 ```
