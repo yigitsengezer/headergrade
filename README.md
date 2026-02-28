@@ -1,6 +1,6 @@
 # HeaderGrade
 
-HeaderGrade is a fast and local HTTP security header scanner built in Go. It allows you to analyze website security headers (similar to online tools) entirely on your local machine or internal network.
+HeaderGrade is a fast and local HTTP security header scanner built in Go. It allows you to analyze website security headers (similar to online tools) entirely on your local machine or internal network. 
 
 [![Screenshot of HeaderGrade](screenshot.png)](screenshot.png)
 
