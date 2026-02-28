@@ -30,11 +30,13 @@ Start the server using the compiled executable:
 headergrade
 ```
 
-By default, the server will start on port `8002`. Open your web browser and navigate to:
+By default, the server will start on port `8002`. You can specify a custom port using the `-p` flag:
 
+```bash
+headergrade -p 8080
 ```
-http://localhost:8002
-```
+
+Open your web browser and navigate to the displayed URL (e.g., `http://localhost:8002`).
 
 Enter any valid target URL and select whether to follow HTTP redirects to get an instant breakdown of the target's security posture.
 

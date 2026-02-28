@@ -3,6 +3,7 @@ package main
 import (
 	"embed"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/fs"
 	"log"
@@ -180,6 +181,10 @@ func handleScan(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	var port string
+	flag.StringVar(&port, "p", "8002", "port to run the server on")
+	flag.Parse()
+
 	subFS, err := fs.Sub(staticFS, "static")
 	if err != nil {
 		log.Fatalf("Failed to create sub filesystem: %v", err)
@@ -189,9 +194,9 @@ func main() {
 	http.Handle("/", fileServer)
 	http.HandleFunc("/api/scan", handleScan)
 
-	port := ":8002"
-	log.Printf("Starting server on port %s", port)
-	if err := http.ListenAndServe(port, nil); err != nil {
+	address := ":" + port
+	fmt.Printf("Server is running. Visit: http://localhost%s\n", address)
+	if err := http.ListenAndServe(address, nil); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }
