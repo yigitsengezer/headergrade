@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeaderGrade - Security Header Scanner</title>
+    <meta name="description" content="Scan and analyze HTTP response security headers easily.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="wrapper">
+        <header>
+            <div class="logo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                HeaderGrade
+            </div>
+            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <main class="container">
+            <div class="hero" id="hero-section">
+                <h1>Analyze your HTTP response headers</h1>
+                <p>Find out how secure your headers are, and get recommendations on how to improve your security
+                    posture.</p>
+
+                <form id="scan-form">
+                    <div class="input-group">
+                        <input type="text" id="url-input" placeholder="https://example.com" required>
+                        <button type="submit" id="scan-btn">Scan</button>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="follow-redirects" checked>
+                        <label for="follow-redirects">Follow Redirects</label>
+                    </div>
+                </form>
+                <div id="loading" class="hidden">
+                    <div class="spinner"></div>
+                    <p>Scanning headers, please wait...</p>
+                </div>
+                <div id="error-message" class="error-text hidden"></div>
+            </div>
+
+            <div id="result-section" class="hidden">
+                <button id="new-scan-btn" class="back-btn">&larr; New Scan</button>
+
+                <div class="report-summary-header">
+                    <h2>Security Report Summary</h2>
+                </div>
+                <div class="report-summary card">
+                    <div class="grade-container" id="grade-display">
+                        A+
+                    </div>
+                    <div class="summary-details">
+                        <div class="detail-row">
+                            <span class="label">Site:</span>
+                            <span class="value" id="site-value"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">IP Address:</span>
+                            <span class="value" id="ip-value"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="label">Report Time:</span>
+                            <span class="value" id="time-value"></span>
+                        </div>
+                        <div class="detail-row headers-row">
+                            <span class="label">Headers:</span>
+                            <span class="value" id="headers-pills"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="headers-section">
+                    <h3 class="section-title text-error">Missing Headers</h3>
+                    <div id="missing-headers" class="headers-list"></div>
+                </div>
+
+                <div class="headers-section">
+                    <h3 class="section-title text-success">Present Headers</h3>
+                    <div id="present-headers" class="headers-list"></div>
+                </div>
+
+                <div class="headers-section">
+                    <h3 class="section-title">Raw Headers</h3>
+                    <div class="card raw-headers-card">
+                        <table class="raw-headers-table">
+                            <tbody id="raw-headers"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
