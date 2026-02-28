@@ -54,6 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let url = urlInput.value.trim();
         if (!url) return;
 
+        // Sync main input to quick search
+        const quickUrlInput = document.getElementById('quick-url-input');
+        if (quickUrlInput) {
+            quickUrlInput.value = url;
+        }
+
         // Update URL
         const newUrl = new URL(window.location);
         newUrl.searchParams.set('url', url);
@@ -62,6 +68,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
         performScan(url, followRedirects.checked);
     });
+
+    const quickScanForm = document.getElementById('quick-scan-form');
+    if (quickScanForm) {
+        quickScanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const quickUrlInput = document.getElementById('quick-url-input');
+            let url = quickUrlInput.value.trim();
+            if (!url) return;
+
+            // Sync quick search to main input
+            urlInput.value = url;
+
+            // Update URL
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('url', url);
+            newUrl.searchParams.set('followRedirects', followRedirects.checked);
+            window.history.pushState({}, '', newUrl);
+
+            performScan(url, followRedirects.checked);
+        });
+    }
 
     async function performScan(url, follow) {
         // Reset state
@@ -141,7 +168,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderResults(data) {
-        siteValue.textContent = data.site;
+        const siteAnchor = document.getElementById('site-value');
+        siteAnchor.textContent = data.site;
+        siteAnchor.href = data.site;
+
         ipValue.textContent = data.ip_address || 'Unknown';
         timeValue.textContent = data.report_time;
 
@@ -176,8 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Missing Headers
+        const missingSection = document.getElementById('missing-headers-section');
         missingHeadersContainer.innerHTML = '';
         if (data.missing_headers && data.missing_headers.length > 0) {
+            missingSection.classList.remove('hidden');
             data.missing_headers.forEach(h => {
                 const item = document.createElement('div');
                 item.className = 'header-item missing-item';
@@ -191,27 +223,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 missingHeadersContainer.appendChild(item);
             });
         } else {
-            missingHeadersContainer.innerHTML = '<p class="text-success" style="font-weight: 600;">Great job! You are not missing any tracked security headers.</p>';
+            missingSection.classList.add('hidden');
         }
 
         // Present Headers
+        const presentSection = document.getElementById('present-headers-section');
         presentHeadersContainer.innerHTML = '';
         if (data.present_headers && data.present_headers.length > 0) {
+            presentSection.classList.remove('hidden');
             data.present_headers.forEach(h => {
+                let badgeHTML = '<span class="badge-present">Present</span>';
+                let warningsHTML = '';
+
+                if (h.warnings && h.warnings.length > 0) {
+                    badgeHTML += ' <span class="badge-warning">Warning</span>';
+                    const warningList = h.warnings.map(w => `<li class="warning-text">${escapeHTML(w)}</li>`).join('');
+                    warningsHTML = `<ul class="warnings-list">${warningList}</ul>`;
+                }
+
                 const item = document.createElement('div');
                 item.className = 'header-item present-item';
                 item.innerHTML = `
                     <div>
                         <span class="header-name">${escapeHTML(h.name)}</span>
-                        <span class="badge-present">Present</span>
+                        ${badgeHTML}
                     </div>
                     <div class="header-desc">${escapeHTML(h.description)}</div>
+                    ${warningsHTML}
                     <div class="header-value">${escapeHTML(h.value)}</div>
                 `;
                 presentHeadersContainer.appendChild(item);
             });
         } else {
-            presentHeadersContainer.innerHTML = '<p style="color:var(--text-secondary)">No major security headers found.</p>';
+            presentSection.classList.add('hidden');
         }
 
         // Raw Headers

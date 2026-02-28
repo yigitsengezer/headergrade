@@ -10,9 +10,15 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
+
+	fhttp "github.com/bogdanfinn/fhttp"
+	tls_client "github.com/bogdanfinn/tls-client"
+	"github.com/bogdanfinn/tls-client/profiles"
 )
 
 //go:embed static/*
@@ -24,9 +30,10 @@ type ScanRequest struct {
 }
 
 type HeaderInfo struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	Value       string `json:"value,omitempty"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Value       string   `json:"value,omitempty"`
+	Warnings    []string `json:"warnings,omitempty"`
 }
 
 type ScanResult struct {
@@ -89,22 +96,56 @@ func handleScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	client := &http.Client{
-		Timeout: 15 * time.Second,
+	// Build TLS client with Chrome fingerprint
+	options := []tls_client.HttpClientOption{
+		tls_client.WithTimeoutSeconds(15),
+		tls_client.WithClientProfile(profiles.Chrome_124),
 	}
-
 	if !req.FollowRedirects {
-		client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}
+		options = append(options, tls_client.WithNotFollowRedirects())
 	}
 
-	httpReq, err := http.NewRequest("GET", req.TargetURL, nil)
+	client, err := tls_client.NewHttpClient(tls_client.NewNoopLogger(), options...)
+	if err != nil {
+		json.NewEncoder(w).Encode(ScanResult{Error: "Failed to create TLS client: " + err.Error()})
+		return
+	}
+
+	httpReq, err := fhttp.NewRequest("GET", req.TargetURL, nil)
 	if err != nil {
 		json.NewEncoder(w).Encode(ScanResult{Error: "Failed to create request"})
 		return
 	}
-	httpReq.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36")
+	httpReq.Header = fhttp.Header{
+		"User-Agent":                {"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"},
+		"Accept":                    {"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"},
+		"Accept-Language":           {"en-US,en;q=0.9"},
+		"Accept-Encoding":           {"gzip, deflate, br"},
+		"Sec-CH-UA":                 {`"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"`},
+		"Sec-CH-UA-Mobile":          {"?0"},
+		"Sec-CH-UA-Platform":        {`"Windows"`},
+		"Sec-Fetch-Dest":            {"document"},
+		"Sec-Fetch-Mode":            {"navigate"},
+		"Sec-Fetch-Site":            {"none"},
+		"Sec-Fetch-User":            {"?1"},
+		"Upgrade-Insecure-Requests": {"1"},
+		"Cache-Control":             {"max-age=0"},
+		fhttp.HeaderOrderKey: {
+			"user-agent",
+			"accept",
+			"accept-language",
+			"accept-encoding",
+			"sec-ch-ua",
+			"sec-ch-ua-mobile",
+			"sec-ch-ua-platform",
+			"sec-fetch-dest",
+			"sec-fetch-mode",
+			"sec-fetch-site",
+			"sec-fetch-user",
+			"upgrade-insecure-requests",
+			"cache-control",
+		},
+	}
 
 	resp, err := client.Do(httpReq)
 	if err != nil {
@@ -160,11 +201,34 @@ func handleScan(w http.ResponseWriter, r *http.Request) {
 
 	for headerName, description := range securityHeaders {
 		val, exists := rawMap[headerName]
+		var warnings []string
+
 		if exists && val != "" {
+			if headerName == "Content-Security-Policy" {
+				if strings.Contains(val, "'unsafe-inline'") {
+					warnings = append(warnings, "This policy contains 'unsafe-inline' which is dangerous.")
+				}
+				if strings.Contains(val, "'unsafe-eval'") {
+					warnings = append(warnings, "This policy contains 'unsafe-eval' which is dangerous.")
+				}
+			} else if headerName == "Strict-Transport-Security" {
+				re := regexp.MustCompile(`max-age=(\d+)`)
+				matches := re.FindStringSubmatch(val)
+				if len(matches) > 1 {
+					maxAge, _ := strconv.Atoi(matches[1])
+					if maxAge < 2592000 {
+						warnings = append(warnings, "The \"max-age\" directive is too small. The minimum recommended value is 2592000 (30 days).")
+					}
+				} else {
+					warnings = append(warnings, "Could not find a valid \"max-age\" directive.")
+				}
+			}
+
 			result.PresentHeaders = append(result.PresentHeaders, HeaderInfo{
 				Name:        headerName,
 				Description: description,
 				Value:       val,
+				Warnings:    warnings,
 			})
 		} else {
 			result.MissingHeaders = append(result.MissingHeaders, HeaderInfo{

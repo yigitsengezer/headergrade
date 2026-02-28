@@ -252,18 +252,45 @@ input[type="checkbox"] {
     padding-bottom: 4rem;
 }
 
+.result-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
 .back-btn {
     background: transparent;
     color: var(--text-secondary);
     padding: 0.5rem 0;
     font-size: 1rem;
-    margin-bottom: 1.5rem;
     display: inline-block;
 }
 
 .back-btn:hover {
     background: transparent;
     color: white;
+}
+
+.quick-scan-form {
+    display: flex;
+    flex: 1;
+    max-width: 400px;
+    gap: 0.5rem;
+}
+
+.quick-scan-form input {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    height: 40px;
+}
+
+.quick-scan-form button {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    height: 40px;
 }
 
 .card {
@@ -365,6 +392,15 @@ input[type="checkbox"] {
     font-size: 1rem;
     word-break: break-all;
     flex: 1;
+}
+
+.detail-row .value a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.detail-row .value a:hover {
+    text-decoration: underline;
 }
 
 .headers-row .value {
@@ -480,6 +516,25 @@ input[type="checkbox"] {
     font-weight: 600;
     margin-left: 0.5rem;
     vertical-align: middle;
+}
+
+.badge-warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.warnings-list {
+    margin: 0.75rem 0 0 0;
+    padding-left: 1.5rem;
+    color: var(--warning);
+    font-size: 0.9rem;
+    line-height: 1.5;
 }
 
 .header-value {

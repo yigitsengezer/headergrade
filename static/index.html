@@ -64,7 +64,13 @@
             </div>
 
             <div id="result-section" class="hidden">
-                <button id="new-scan-btn" class="back-btn">&larr; New Scan</button>
+                <div class="result-actions">
+                    <button id="new-scan-btn" class="back-btn">&larr; New Scan</button>
+                    <form id="quick-scan-form" class="quick-scan-form">
+                        <input type="text" id="quick-url-input" placeholder="https://..." required>
+                        <button type="submit" id="quick-scan-btn">Scan</button>
+                    </form>
+                </div>
 
                 <div class="report-summary-header">
                     <h2>Security Report Summary</h2>
@@ -76,7 +82,8 @@
                     <div class="summary-details">
                         <div class="detail-row">
                             <span class="label">Site:</span>
-                            <span class="value" id="site-value"></span>
+                            <span class="value"><a href="#" id="site-value" target="_blank"
+                                    rel="noopener noreferrer"></a></span>
                         </div>
                         <div class="detail-row">
                             <span class="label">IP Address:</span>
@@ -93,12 +100,12 @@
                     </div>
                 </div>
 
-                <div class="headers-section">
+                <div class="headers-section" id="missing-headers-section">
                     <h3 class="section-title text-error">Missing Headers</h3>
                     <div id="missing-headers" class="headers-list"></div>
                 </div>
 
-                <div class="headers-section">
+                <div class="headers-section" id="present-headers-section">
                     <h3 class="section-title text-success">Present Headers</h3>
                     <div id="present-headers" class="headers-list"></div>
                 </div>
